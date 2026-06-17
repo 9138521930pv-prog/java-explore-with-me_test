@@ -61,4 +61,4 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://main-db:5432/main-db
       - SPRING_DATASOURCE_USERNAME=ewm
       - SPRING_DATASOURCE_PASSWORD=ewm
-      - STATS_SERVER_URL=http://stat-erver:9090
+      - STATS_SERVER_URL=http://stat-server:9090
