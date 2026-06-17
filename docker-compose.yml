@@ -1,17 +1,4 @@
 services:
-  stats-server:
-    build: stat-service/server
-    image: stat-server
-    container_name: stat-server
-    ports:
-      - "9090:9090"
-    depends_on:
-      - stat-db
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://stat-db:5432/stat-db
-      - SPRING_DATASOURCE_USERNAME=ewm
-      - SPRING_DATASOURCE_PASSWORD=ewm
-
   stats-db:
     image: postgres:16.1
     container_name: stat-db
@@ -22,21 +9,6 @@ services:
       - POSTGRES_USER=ewm
       - POSTGRES_DB=stat-db
 
-  ewm-service:
-    build: main-service
-    image: main-service
-    container_name: main-service
-    ports:
-      - "8080:8080"
-    depends_on:
-      - main-db
-      - stat-server
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://main-db:5432/main-db
-      - SPRING_DATASOURCE_USERNAME=ewm
-      - SPRING_DATASOURCE_PASSWORD=ewm
-      - STATS_SERVER_URL=http://stat-erver:9090
-
   ewm-db:
     image: postgres:16.1
     container_name: main-db
@@ -46,3 +18,37 @@ services:
       - POSTGRES_PASSWORD=ewm
       - POSTGRES_USER=ewm
       - POSTGRES_DB=main-db
+
+  stats-server:
+    build: stat-service/server
+    image: stat-server
+    container_name: stat-server
+    ports:
+      - "9090:9090"
+
+    depends_on:
+      stats-db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stat-db:5432/stat-db
+      - SPRING_DATASOURCE_USERNAME=ewm
+      - SPRING_DATASOURCE_PASSWORD=ewm
+
+
+  ewm-service:
+    build: main-service
+    image: main-service
+    container_name: main-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      ewm-db:
+        condition: service_healthy
+      stats-server:
+        condition: service_started
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://main-db:5432/main-db
+      - SPRING_DATASOURCE_USERNAME=ewm
+      - SPRING_DATASOURCE_PASSWORD=ewm
+      - STATS_SERVER_URL=http://stat-erver:9090
+
