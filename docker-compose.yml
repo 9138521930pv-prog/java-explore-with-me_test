@@ -1,3 +1,7 @@
+networks:
+  app-network:
+    driver: bridge
+
 services:
   stats-db:
     image: postgres:16.1
@@ -14,6 +18,8 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+    networks:
+      - app-network
 
   ewm-db:
     image: postgres:16.1
@@ -25,11 +31,13 @@ services:
       - POSTGRES_USER=ewm
       - POSTGRES_DB=main-db
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ewm -d main-db" ]
+      test: ["CMD-SHELL", "pg_isready -U ewm -d main-db"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
+    networks:
+      - app-network
 
   stats-server:
     build: stat-service/server
@@ -37,7 +45,6 @@ services:
     container_name: stats-server
     ports:
       - "9090:9090"
-
     depends_on:
       stats-db:
         condition: service_healthy
@@ -46,11 +53,13 @@ services:
       - SPRING_DATASOURCE_USERNAME=ewm
       - SPRING_DATASOURCE_PASSWORD=ewm
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9090/actuator/health" ]
+      test: ["CMD", "curl", "-f", "http://localhost:9090/actuator/health"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
+    networks:
+      - app-network
 
   ewm-service:
     build: main-service
@@ -67,4 +76,6 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://main-db:5432/main-db
       - SPRING_DATASOURCE_USERNAME=ewm
       - SPRING_DATASOURCE_PASSWORD=ewm
-      - STATS_SERVER_URL=http://stat-server:9090
+      - STATS_SERVER_URL=http://stats-server:9090
+    networks:
+      - app-network
