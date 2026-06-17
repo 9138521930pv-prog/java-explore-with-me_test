@@ -45,6 +45,12 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://stat-db:5432/stat-db
       - SPRING_DATASOURCE_USERNAME=ewm
       - SPRING_DATASOURCE_PASSWORD=ewm
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9090/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   ewm-service:
     build: main-service
@@ -56,7 +62,7 @@ services:
       ewm-db:
         condition: service_healthy
       stats-server:
-        condition: service_started
+        condition: service_healthy
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://main-db:5432/main-db
       - SPRING_DATASOURCE_USERNAME=ewm
