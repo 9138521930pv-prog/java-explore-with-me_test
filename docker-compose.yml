@@ -50,7 +50,7 @@ services:
     depends_on:
       - stats-db
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:6432/stat-db
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/stat-db
       - SPRING_DATASOURCE_USERNAME=ewm
       - SPRING_DATASOURCE_PASSWORD=ewm
     healthcheck:
@@ -68,12 +68,15 @@ services:
     container_name: main-service
     ports:
       - "8080:8080"
-  depends_on:
-    - ewm-db
-    - stats-server
+    depends_on:
+      - ewm-db
+      - stats-server
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://main-db:7432/main-db
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://main-db:5432/main-db
       - SPRING_DATASOURCE_USERNAME=ewm
       - SPRING_DATASOURCE_PASSWORD=ewm
       - STATS_SERVER_URL=http://stats-server:9090
+    networks:
+      - app-network
+
 
