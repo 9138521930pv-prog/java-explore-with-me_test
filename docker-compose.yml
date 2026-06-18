@@ -14,7 +14,7 @@ services:
     environment:
       - POSTGRES_PASSWORD=ewm
       - POSTGRES_USER=ewm
-      - POSTGRES_DB=stat-db
+      - POSTGRES_DB=stats-db
 
   stats-server:
     build: stat-service/server
@@ -24,7 +24,7 @@ services:
     depends_on:
       - stats-db
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:6432/stat-db
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:6432/stats-db
       - SPRING_DATASOURCE_USERNAME=ewm
       - SPRING_DATASOURCE_PASSWORD=ewm
 
