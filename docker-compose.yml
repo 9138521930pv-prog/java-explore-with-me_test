@@ -1,3 +1,5 @@
+version: '3.8'
+
 networks:
   app-network:
     driver: bridge
@@ -11,54 +13,71 @@ services:
     environment:
       - POSTGRES_PASSWORD=ewm
       - POSTGRES_USER=ewm
-      - POSTGRES_DB=stats-db
+      - POSTGRES_DB=stat-db
     healthcheck:
-      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      test: ["CMD-SHELL", "pg_isready -U ewm -d stat-db"]
+      interval: 10s
       timeout: 5s
-      interval: 5s
-      retries: 10
+      retries: 5
+      start_period: 30s
+    networks:
+      - app-network
 
   ewm-db:
     image: postgres:16.1
     container_name: main-db
     ports:
-      - "7432:5432"
+      - "7433:5432"
     environment:
       - POSTGRES_PASSWORD=ewm
       - POSTGRES_USER=ewm
       - POSTGRES_DB=main-db
     healthcheck:
-      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      test: ["CMD-SHELL", "pg_isready -U ewm -d main-db"]
+      interval: 10s
       timeout: 5s
-      interval: 5s
-      retries: 10
+      retries: 5
+      start_period: 30s
+    networks:
+      - app-network
 
   stats-server:
     build: stat-service/server
-   # image: stats-server
+    image: stats-server
     container_name: stats-server
     ports:
       - "9090:9090"
     depends_on:
-      stats-db:
+      - service: stats-db
         condition: service_healthy
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:6432/stats-db
-      - SPRING_DATASOURCE_USERNAME=stat
-      - SPRING_DATASOURCE_PASSWORD=stat
-
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:6432/stat-db
+      - SPRING_DATASOURCE_USERNAME=ewm
+      - SPRING_DATASOURCE_PASSWORD=ewm
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9090/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - app-network
 
   ewm-service:
     build: main-service
-#    image: main-service
+    image: main-service
     container_name: main-service
     ports:
       - "8080:8080"
     depends_on:
-      -ewm-db
-      -stats-server
+      - service: ewm-db
+        condition: service_healthy
+      - service: stats-server
+        condition: service_healthy
     environment:
-      - CLIENT_URL=http://stats-server:9090
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:7432/main-db
-      - SPRING_DATASOURCE_USERNAME=main
-      - SPRING_DATASOURCE_PASSWORD=main
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://main-db:7432/main-db
+      - SPRING_DATASOURCE_USERNAME=ewm
+      - SPRING_DATASOURCE_PASSWORD=ewm
+      - STATS_SERVER_URL=http://stats-server:9090
+    networks:
+      - app-network
