@@ -2,7 +2,7 @@ package ru.practicum.ewm.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.ewm.EndpointHit;
+import ru.practicum.ewm.EndpointRequest;
 import ru.practicum.ewm.ViewStats;
 import ru.practicum.ewm.ViewsStatsRequest;
 import ru.practicum.ewm.repository.StatsRepository;
@@ -15,7 +15,7 @@ public class StatsServiceImpl implements StatsService {
     private final StatsRepository statRepository;
 
     @Override
-    public void saveHit(EndpointHit hit) {
+    public void saveHit(EndpointRequest hit) {
         statRepository.saveHit(hit);
     }
 
