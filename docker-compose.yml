@@ -10,6 +10,16 @@ services:
       - POSTGRES_USER=ewm
       - POSTGRES_DB=stats-db
 
+  ewm-db:
+    image: postgres:16.1
+    container_name: main-db
+    ports:
+      - "7432:5432"
+    environment:
+      - POSTGRES_PASSWORD=ewm
+      - POSTGRES_USER=ewm
+      - POSTGRES_DB=main-db
+
   stats-server:
     build: stat-service/server
     container_name: stats-server
