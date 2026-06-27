@@ -19,7 +19,7 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundException(NotFoundException e) {
-        log.debug("Получен статус 404 NOT_FOUND {}", e.getMessage(), e);
+        log.debug("Received 404 NOT_FOUND status: {}", e.getMessage(), e);
         return ErrorResponse.builder()
                 .status(HttpStatus.NOT_FOUND.value())
                 .message(e.getMessage())
@@ -32,7 +32,7 @@ public class ErrorHandler {
             MissingServletRequestParameterException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handlerIncorrectParametersException(Exception e) {
-        log.debug("Получен статус 400 BAD_REQUEST {}", e.getMessage(), e);
+        log.debug("Received 400 BAD_REQUEST status: {}", e.getMessage());
         return ErrorResponse.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
                 .message(e.getMessage())
@@ -43,7 +43,7 @@ public class ErrorHandler {
     @ExceptionHandler({PSQLException.class, ConflictException.class, DataIntegrityViolationException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handlerValidationException(Exception e) {
-        log.debug("Получен статус 409 CONFLICT {}", e.getMessage());
+        log.warn("Received 409 CONFLICT status: {}", e.getMessage());
         return ErrorResponse.builder()
                 .status(HttpStatus.CONFLICT.value())
                 .message(e.getMessage())
@@ -55,7 +55,7 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handlerOtherException(Throwable e) {
-        log.warn("Получен статус 500 SERVER_ERROR {}", e.getMessage(), e);
+        log.error("Received 500 INTERNAL_SERVER_ERROR status: {}", e.getMessage(), e);
         return ErrorResponse.builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .message(e.getMessage())
