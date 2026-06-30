@@ -12,8 +12,8 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class EndpointRequest {
-    private int id;
+public class EndpointHit {
+    private Long id;
     private String app;
     private String uri;
     private String ip;
