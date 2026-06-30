@@ -14,7 +14,6 @@ import ru.practicum.ewm.model.Event;
 import ru.practicum.ewm.model.mappers.CompilationMapper;
 import ru.practicum.ewm.repository.CompilationRepository;
 import ru.practicum.ewm.repository.EventRepository;
-import ru.practicum.ewm.service.CompilationService;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -26,6 +25,7 @@ public class CompilationServiceImpl implements CompilationService {
     private final CompilationRepository compilationRepository;
     private final EventRepository eventRepository;
     private final CompilationMapper compilationMapper;
+
     @Transactional
     @Override
     public CompilationDto addCompilation(NewCompilationDto compilationDto) {

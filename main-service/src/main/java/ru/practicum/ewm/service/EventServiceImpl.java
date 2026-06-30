@@ -138,6 +138,9 @@ public class EventServiceImpl implements EventService {
         if (hasChanges) {
             eventAfterUpdate = eventRepository.save(eventForUpdate);
         }
+
+//        System.out.println("--------------------->" + eventMapper.toEventFullDto(eventAfterUpdate));
+
         return eventAfterUpdate != null ? eventMapper.toEventFullDto(eventAfterUpdate) : null;
     }
 

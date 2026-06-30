@@ -15,7 +15,7 @@ import ru.practicum.ewm.model.mappers.RequestMapper;
 import ru.practicum.ewm.repository.EventRepository;
 import ru.practicum.ewm.repository.RequestRepository;
 import ru.practicum.ewm.repository.UserRepository;
-import ru.practicum.ewm.service.RequestService;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,6 +28,7 @@ public class RequestServiceImpl implements RequestService {
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final RequestMapper requestMapper;
+
     @Override
     public ParticipationRequestDto addNewRequest(Long userId, Long eventId) {
         User user = checkUser(userId);

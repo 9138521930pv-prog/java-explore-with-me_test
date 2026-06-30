@@ -12,7 +12,7 @@ public interface RequestMapper {
     @Mapping(target = "requester", source = "requester.id")
     ParticipationRequestDto toParticipationRequestDto(Request request);
 
-       @Mapping(target = "event", ignore = true)
+    @Mapping(target = "event", ignore = true)
     @Mapping(target = "requester", ignore = true)
     Request toRequest(ParticipationRequestDto participationRequestDto);
 }
