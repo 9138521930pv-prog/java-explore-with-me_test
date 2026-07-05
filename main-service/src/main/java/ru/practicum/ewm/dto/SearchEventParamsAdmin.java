@@ -3,6 +3,7 @@ package ru.practicum.ewm.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import ru.practicum.ewm.model.enums.EventStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,13 +15,11 @@ import java.util.List;
 @AllArgsConstructor
 public class SearchEventParamsAdmin {
     private List<Long> users;
-    private List<String> states;
+    private List<EventStatus> states;
     private List<Long> categories;
-    @JsonFormat
-            (shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat (shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime rangeStart;
-    @JsonFormat
-            (shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat (shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime rangeEnd;
     @PositiveOrZero
     @Builder.Default

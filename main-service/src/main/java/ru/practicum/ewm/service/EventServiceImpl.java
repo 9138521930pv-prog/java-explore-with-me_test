@@ -62,7 +62,7 @@ public class EventServiceImpl implements EventService {
         Specification<Event> specification = Specification.where(null);
 
         List<Long> users = searchEventParamsAdmin.getUsers();
-        List<String> states = searchEventParamsAdmin.getStates();
+        List<EventStatus> states = searchEventParamsAdmin.getStates();
         List<Long> categories = searchEventParamsAdmin.getCategories();
         LocalDateTime rangeEnd = searchEventParamsAdmin.getRangeEnd();
         LocalDateTime rangeStart = searchEventParamsAdmin.getRangeStart();

@@ -5,11 +5,13 @@ import org.mapstruct.Mapping;
 import ru.practicum.ewm.dto.ParticipationRequestDto;
 import ru.practicum.ewm.model.Request;
 
-@Mapper(componentModel = "spring") // Генерирует бин Spring, чтобы можно было инжектить через @Autowired
+import java.util.List;
+
+@Mapper(componentModel = "spring")
 public interface RequestMapper {
 
-    @Mapping(target = "event", source = "event.id")
-    @Mapping(target = "requester", source = "requester.id")
+    @Mapping(source = "event.id", target = "event")
+    @Mapping(source = "requester.id", target = "requester")
     ParticipationRequestDto toParticipationRequestDto(Request request);
 
     @Mapping(target = "event", ignore = true)
