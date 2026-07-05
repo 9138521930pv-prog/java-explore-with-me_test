@@ -5,8 +5,6 @@ import org.mapstruct.Mapping;
 import ru.practicum.ewm.dto.ParticipationRequestDto;
 import ru.practicum.ewm.model.Request;
 
-import java.util.List;
-
 @Mapper(componentModel = "spring")
 public interface RequestMapper {
 
