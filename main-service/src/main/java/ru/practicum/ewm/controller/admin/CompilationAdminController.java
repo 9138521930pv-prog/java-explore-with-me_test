@@ -21,21 +21,21 @@ public class CompilationAdminController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CompilationDto addCompilation(@RequestBody @Valid NewCompilationDto compilationDto) {
-        log.info("POST запрос на создание подборки событий");
+        log.info("POST request to create an event compilation");
         return compilationService.addCompilation(compilationDto);
     }
 
     @PatchMapping("/{compId}")
     public CompilationDto updateCompilation(@RequestBody @Valid UpdateCompilationDto update,
                                             @PathVariable Long compId) {
-        log.info("PATCH запрос на обнавление подборки событий");
+        log.info("PATCH request to update an event compilation");
         return compilationService.updateCompilation(compId, update);
     }
 
     @DeleteMapping("/{compId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCompilation(@PathVariable Long compId) {
-        log.info("DELETE запрос на удаление подборки событий");
+        log.info("DELETE request to delete an event compilation");
         compilationService.deleteCompilation(compId);
     }
 }

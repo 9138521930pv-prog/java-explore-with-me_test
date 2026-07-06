@@ -22,21 +22,21 @@ public class CategoryAdminController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CategoryDto createCategory(@RequestBody @Valid NewCategoryDto newCategoryDto) {
-        log.info("POST запрос на создание новой категории: {}", newCategoryDto);
+        log.info("POST request to create a new category: {}", newCategoryDto);
         return categoryService.addNewCategory(newCategoryDto);
     }
 
     @DeleteMapping("/{catId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCategory(@PathVariable Long catId) {
-        log.info("DELETE запрос на удалении категории с id =  {} ", catId);
+        log.info("DELETE request to delete category with id = {}", catId);
         categoryService.deleteCategoryById(catId);
     }
 
     @PatchMapping("/{catId}")
     public CategoryDto updateCategory(@PathVariable(value = "catId") @Min(1) Long catId,
                                       @RequestBody @Valid CategoryDto categoryDto) {
-        log.info("PATCH запрос на обновдение категории с id = {}", catId);
+        log.info("PATCH request to update category with id = {}", catId);
         return categoryService.updateCategory(catId, categoryDto);
     }
 }

@@ -22,13 +22,13 @@ public class CategoryPublicController {
     @GetMapping
     public List<CategoryDto> getCategories(@RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
                                            @RequestParam(defaultValue = "10") @Positive Integer size) {
-        log.info("GET запрос на получение категорий списком с размерами");
+        log.info("GET request to retrieve a list of categories with pagination");
         return categoryService.getCategories(from, size);
     }
 
     @GetMapping("/{catId}")
     public CategoryDto getCategory(@PathVariable Long catId) {
-        log.info("GET запрос на получение категории с id={}", catId);
+        log.info("GET request to retrieve category with id={}", catId);
         return categoryService.getCategoryById(catId);
     }
 }

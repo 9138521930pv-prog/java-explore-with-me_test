@@ -47,14 +47,14 @@ public class EventPublicController {
                 .from(from)
                 .size(size)
                 .build();
-        log.info("GET запрос на получения событий с фильтром");
+        log.info("GET request to retrieve events with filter");
         return eventService.getAllEventFromPublic(searchEventParams, request);
     }
 
     @GetMapping("/{eventId}")
     public EventFullDto getEventById(@PathVariable(value = "eventId") @Min(1) Long eventId,
                                      HttpServletRequest request) {
-        log.info("GET запрос на получения полной информации о событии с  id= {}", eventId);
+        log.info("GET request to retrieve full information about the event with id = {}", eventId);
         return eventService.getEventById(eventId, request);
     }
 }

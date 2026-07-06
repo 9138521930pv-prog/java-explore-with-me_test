@@ -32,7 +32,7 @@ public class CompilationPublicController {
 
     @GetMapping("/{compId}")
     public CompilationDto findByIdCompilation(@PathVariable Long compId) {
-        log.info("GET запрос на удаление подборки событий");
+        log.info("GET request to retrieve compilation by ID: {}", compId);
         return compilationService.findByIdCompilation(compId);
     }
 }

@@ -105,7 +105,7 @@ public class EventServiceImpl implements EventService {
     public EventFullDto updateEventFromAdmin(Long eventId, UpdateEventAdminRequest updateEvent) {
         Event oldEvent = checkEvent(eventId);
         if (oldEvent.getEventStatus().equals(EventStatus.PUBLISHED) || oldEvent.getEventStatus().equals(EventStatus.CANCELED)) {
-            throw new ConflictException("Можно изменить только неподтвержденное событие");
+            throw new ConflictException("Only an unconfirmed event can be modified");
         }
         boolean hasChanges = false;
         Event eventForUpdate = universalUpdate(oldEvent, updateEvent);
@@ -117,8 +117,9 @@ public class EventServiceImpl implements EventService {
         LocalDateTime gotEventDate = updateEvent.getEventDate();
         if (gotEventDate != null) {
             if (gotEventDate.isBefore(LocalDateTime.now().plusHours(1))) {
-                throw new UncorrectedParametersException("Некорректные параметры даты.Дата начала " +
-                        "изменяемого события должна " + "быть не ранее чем за час от даты публикации.");
+                throw new UncorrectedParametersException(
+                          "Incorrect date parameters. The start date of the event being modified " +
+                          "must be no earlier than one hour before the publication date.");
             }
             eventForUpdate.setEventDate(updateEvent.getEventDate());
             hasChanges = true;
@@ -138,9 +139,6 @@ public class EventServiceImpl implements EventService {
         if (hasChanges) {
             eventAfterUpdate = eventRepository.save(eventForUpdate);
         }
-
-//        System.out.println("--------------------->" + eventMapper.toEventFullDto(eventAfterUpdate));
-
         return eventAfterUpdate != null ? eventMapper.toEventFullDto(eventAfterUpdate) : null;
     }
 
@@ -243,7 +241,7 @@ public class EventServiceImpl implements EventService {
         Event event = checkEvenByInitiatorAndEventId(userId, eventId);
 
         if (!event.isRequestModeration() || event.getParticipantLimit() == 0) {
-            throw new ConflictException("Это событие не требует подтверждения запросов");
+            throw new ConflictException("This event does not require request confirmation");
         }
         RequestStatus status = inputUpdate.getStatus();
 
@@ -251,7 +249,7 @@ public class EventServiceImpl implements EventService {
         switch (status) {
             case CONFIRMED:
                 if (event.getParticipantLimit() == confirmedRequestsCount) {
-                    throw new ConflictException("Лимит участников исчерпан");
+                    throw new ConflictException("The participant limit has been reached");
                 }
                 CaseUpdatedStatusDto updatedStatusConfirmed = updatedStatusConfirmed(event,
                         CaseUpdatedStatusDto.builder()
@@ -275,7 +273,7 @@ public class EventServiceImpl implements EventService {
                         .build();
             case REJECTED:
                 if (event.getParticipantLimit() == confirmedRequestsCount) {
-                    throw new ConflictException("Лимит участников исчерпан");
+                    throw new ConflictException("The participant limit has been reached");
                 }
 
                 final CaseUpdatedStatusDto updatedStatusReject = updatedStatusConfirmed(event,
@@ -290,7 +288,7 @@ public class EventServiceImpl implements EventService {
                                 .map(requestMapper::toParticipationRequestDto).collect(Collectors.toList()))
                         .build();
             default:
-                throw new UncorrectedParametersException("Некорректный статус - " + status);
+                throw new UncorrectedParametersException("Invalid status - " + status);
         }
     }
 
@@ -299,7 +297,8 @@ public class EventServiceImpl implements EventService {
 
         if (searchEventParams.getRangeEnd() != null && searchEventParams.getRangeStart() != null) {
             if (searchEventParams.getRangeEnd().isBefore(searchEventParams.getRangeStart())) {
-                throw new UncorrectedParametersException("Дата окончания не может быть раньше даты начала");
+                throw new UncorrectedParametersException("The end date cannot be earlier than the start date");
+
             }
         }
 
@@ -358,7 +357,7 @@ public class EventServiceImpl implements EventService {
     public EventFullDto getEventById(Long eventId, HttpServletRequest request) {
         Event event = checkEvent(eventId);
         if (!event.getEventStatus().equals(EventStatus.PUBLISHED)) {
-            throw new NotFoundException("Событие с id = " + eventId + " не опубликовано");
+            throw new NotFoundException("The event with id " + eventId + " has not been published");
         }
         addStatsClient(request);
         EventFullDto eventFullDto = eventMapper.toEventFullDto(event);
@@ -370,34 +369,32 @@ public class EventServiceImpl implements EventService {
 
     private Event checkEvent(Long eventId) {
         return eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("События с id = " + eventId + " не существует"));
+                .orElseThrow(() -> new NotFoundException("Event not found for id = " + eventId));
     }
 
     private User checkUser(Long userId) {
         return userRepository.findById(userId).orElseThrow(
-                () -> new NotFoundException("Пользователя с id = " + userId + " не существует"));
+                () -> new NotFoundException("User not found with id: " + userId));
     }
 
     private List<Request> checkRequestOrEventList(Long eventId, List<Long> requestId) {
         return requestRepository.findByEventIdAndIdIn(eventId, requestId).orElseThrow(
-                () -> new NotFoundException("Запроса с id = " + requestId + " или события с id = "
-                        + eventId + "не существуют"));
+                () -> new NotFoundException("Request (id: " + requestId + ") or event (id: " + eventId + ") not found"));
     }
 
     private Category checkCategory(Long catId) {
         return categoryRepository.findById(catId).orElseThrow(
-                () -> new NotFoundException("Категории с id = " + catId + " не существует"));
+                () -> new NotFoundException("Category not found for id = " + catId));
     }
 
     private Event checkEvenByInitiatorAndEventId(Long userId, Long eventId) {
         return eventRepository.findByInitiatorIdAndId(userId, eventId).orElseThrow(
-                () -> new NotFoundException("События с id = " + eventId + "и с пользователем с id = " + userId +
-                        " не существует"));
+                () -> new NotFoundException("No event found with id = " + eventId + " for user id = " + userId));
     }
 
     private void checkDateAndTime(LocalDateTime time, LocalDateTime dateTime) {
         if (dateTime.isBefore(time.plusHours(2))) {
-            throw new UncorrectedParametersException("Поле должно содержать дату, которая еще не наступила.");
+            throw new UncorrectedParametersException("Date must be in the future.");
         }
     }
 

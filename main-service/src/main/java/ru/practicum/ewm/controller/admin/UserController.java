@@ -15,7 +15,6 @@ import ru.practicum.ewm.service.UserService;
 
 import java.util.List;
 
-
 @Slf4j
 @Validated
 @RestController
@@ -28,21 +27,21 @@ public class UserController {
     public List<UserDto> getUsers(@RequestParam(required = false) List<Long> ids,
                                   @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
                                   @RequestParam(defaultValue = "10") @Positive Integer size) {
-        log.info("GET запрос на получение списка пользователей");
+        log.info("GET request to retrieve the list of users");
         return userService.getListUsers(ids, from, size);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public UserDto addUser(@RequestBody @Valid NewUserRequest newUserRequest) {
-        log.info("POST запрос на создание пользователя");
+        log.info("POST request to create a user");
         return userService.addNewUser(newUserRequest);
     }
 
     @DeleteMapping("/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUser(@PathVariable Long userId) {
-        log.info("DELETE запрос на удаление пользователя");
+        log.info("DELETE request to delete a user");
         userService.deleteUser(userId);
     }
 }

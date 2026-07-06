@@ -69,12 +69,12 @@ public class CategoryServiceImpl implements CategoryService {
 
     private void checkUniqNameCategoryIgnoreCase(String name) {
         if (categoryRepository.existsByNameIgnoreCase(name)) {
-            throw new ConflictException(("Категория " + name + " уже существует"));
+            throw new ConflictException("Category " + name + " already exists");
         }
     }
 
     private Category checkCategory(Long catId) {
         return categoryRepository.findById(catId).orElseThrow(() ->
-                new NotFoundException("Категории с id = " + catId + " не существует"));
+                new NotFoundException("Category with id = " + catId + " does not exist"));
     }
 }

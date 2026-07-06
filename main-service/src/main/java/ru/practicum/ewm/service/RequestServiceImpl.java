@@ -34,7 +34,7 @@ public class RequestServiceImpl implements RequestService {
         User user = checkUser(userId);
 
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Событие с id= " + eventId + " не найдено"));
+                .orElseThrow(() -> new NotFoundException("Event not found: id = " + eventId));
         LocalDateTime createdOn = LocalDateTime.now();
         validateNewRequest(event, userId, eventId);
         Request request = new Request();
@@ -68,9 +68,9 @@ public class RequestServiceImpl implements RequestService {
     public ParticipationRequestDto cancelRequest(Long userId, Long requestId) {
         checkUser(userId);
         Request request = requestRepository.findByIdAndRequesterId(requestId, userId).orElseThrow(
-                () -> new NotFoundException("Запрос с id= " + requestId + " не найден"));
+                () -> new NotFoundException("No request found for ID " + requestId));
         if (request.getStatus().equals(RequestStatus.CANCELED) || request.getStatus().equals(RequestStatus.REJECTED)) {
-            throw new UncorrectedParametersException("Запрос не подтвержден");
+            throw new UncorrectedParametersException("The request is not confirmed");
         }
         request.setStatus(RequestStatus.CANCELED);
         Request requestAfterSave = requestRepository.save(request);
@@ -79,21 +79,22 @@ public class RequestServiceImpl implements RequestService {
 
     private User checkUser(Long userId) {
         return userRepository.findById(userId).orElseThrow(() ->
-                new NotFoundException("Категории с id = " + userId + " не существует"));
+            new NotFoundException("Category with id = " + userId + " does not exist"));
     }
+
 
     private void validateNewRequest(Event event, Long userId, Long eventId) {
         if (event.getInitiator().getId().equals(userId)) {
-            throw new ConflictException("Пользователь с id= " + userId + " не инициатор события");
+            throw new ConflictException("User with id = " + userId + " is not the event initiator");
         }
         if (event.getParticipantLimit() > 0 && event.getParticipantLimit() <= requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED)) {
-            throw new ConflictException("Превышен лимит участников события");
+            throw new ConflictException("The event participant limit has been exceeded");
         }
         if (!event.getEventStatus().equals(EventStatus.PUBLISHED)) {
-            throw new ConflictException("Событие не опубликовано");
+            throw new ConflictException("The event is not published");
         }
         if (requestRepository.existsByEventIdAndRequesterId(eventId, userId)) {
-            throw new ConflictException("Попытка добаления дубликата");
+            throw new ConflictException("Attempt to add a duplicate");
         }
     }
 }

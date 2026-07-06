@@ -27,13 +27,13 @@ public class EventAdminController {
 
     @GetMapping
     public List<EventFullDto> searchEvents(@RequestParam(required = false) List<Long> users,
-    @RequestParam(required = false) List<EventStatus> status,
-    @RequestParam(required = false) List<Long> categoryIds,
-    @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    LocalDateTime rangeStart,
-    @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
-    @RequestParam(defaultValue = "0") int from,
-    @RequestParam(defaultValue = "10") int size
+                                           @RequestParam(required = false) List<EventStatus> status,
+                                           @RequestParam(required = false) List<Long> categoryIds,
+                                           @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+                                           LocalDateTime rangeStart,
+                                           @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
+                                           @RequestParam(defaultValue = "0") int from,
+                                           @RequestParam(defaultValue = "10") int size
     ) {
         SearchEventParamsAdmin searchEventParamsAdmin = SearchEventParamsAdmin.builder()
                 .users(users)
@@ -44,19 +44,14 @@ public class EventAdminController {
                 .from(from)
                 .size(size)
                 .build();
-
-
-         //   (@Valid SearchEventParamsAdmin searchEventParamsAdmin) {
-        log.info("GET запрос на получение списка событий");
+        log.info("GET request to retrieve the list of events");
         return eventService.getAllEventFromAdmin(searchEventParamsAdmin);
     }
 
     @PatchMapping("/{eventId}")
     public EventFullDto updateEventByAdmin(@PathVariable(value = "eventId") @Min(1) Long eventId,
                                            @RequestBody @Valid UpdateEventAdminRequest inputUpdate) {
-        log.info("PATCH запрос на обновление списка событий");
-    //    System.out.println(">>>>>>>>>>>" + eventService.updateEventFromAdmin(eventId, inputUpdate));
-
+        log.info("PATCH request to update the event");
         return eventService.updateEventFromAdmin(eventId, inputUpdate);
     }
 }
