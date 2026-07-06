@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.dto.CompilationDto;
 import ru.practicum.ewm.dto.NewCompilationDto;
-import ru.practicum.ewm.dto.UpdateCompilationDto;
+import ru.practicum.ewm.dto.UpdateCompilationRequest;
 import ru.practicum.ewm.service.CompilationService;
 
 
@@ -26,7 +26,7 @@ public class CompilationAdminController {
     }
 
     @PatchMapping("/{compId}")
-    public CompilationDto updateCompilation(@RequestBody @Valid UpdateCompilationDto update,
+    public CompilationDto updateCompilation(@RequestBody @Valid UpdateCompilationRequest update,
                                             @PathVariable Long compId) {
         log.info("PATCH request to update an event compilation");
         return compilationService.updateCompilation(compId, update);

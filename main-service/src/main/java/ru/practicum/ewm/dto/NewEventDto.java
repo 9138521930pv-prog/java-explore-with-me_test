@@ -28,7 +28,8 @@ public class NewEventDto {
     @NotNull
     @Valid
     private LocationDto location;
-    private boolean paid;
+    @Builder.Default
+    private boolean paid = false;
     @PositiveOrZero
     private int participantLimit;
     @Builder.Default

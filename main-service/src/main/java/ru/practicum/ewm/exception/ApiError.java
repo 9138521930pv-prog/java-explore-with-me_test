@@ -5,10 +5,12 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
-public class ErrorResponse {
+public class ApiError {
+    private List<String> errors;
     private final String message;
     private final String reason;
     private final Integer status;
