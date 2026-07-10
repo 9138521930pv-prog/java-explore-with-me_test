@@ -192,7 +192,7 @@ public class EventServiceImpl implements EventService {
             throw new NotFoundException("Пользователь с id= " + userId + " не найден");
         }
         PageRequest pageRequest = PageRequest.of(from / size, size, Sort.by(Sort.Direction.ASC, "id"));
-        return eventRepository.findAll(pageRequest).getContent()
+        return eventRepository.findByInitiatorId(userId, pageRequest).getContent()
                 .stream().map(eventMapper::toEventShortDto).collect(Collectors.toList());
     }
 
@@ -332,24 +332,42 @@ public class EventServiceImpl implements EventService {
                     criteriaBuilder.lessThan(root.get("eventDate"), searchEventParams.getRangeEnd()));
         }
 
-        if (searchEventParams.getOnlyAvailable() != null) {
-            specification = specification.and((root, query, criteriaBuilder) ->
-                    criteriaBuilder.greaterThanOrEqualTo(root.get("participantLimit"), 0));
-        }
-
         specification = specification.and((root, query, criteriaBuilder) ->
                 criteriaBuilder.equal(root.get("eventStatus"), EventStatus.PUBLISHED));
 
         List<Event> resultEvents = eventRepository.findAll(specification, pageable).getContent();
-        List<EventShortDto> result = resultEvents
-                .stream().map(eventMapper::toEventShortDto).collect(Collectors.toList());
+        if (resultEvents.isEmpty()) {
+            return Collections.emptyList();
+        }
+        var eventIds = resultEvents.stream().map(Event::getId).toList();
+        log.info("eventIds size = {}, values = {}", eventIds.size(), eventIds);
+
+        Map<Long, Long> confirmedCounts = requestRepository
+                .countsByEventIdInAndStatus(eventIds, RequestStatus.PENDING)
+                .stream()
+                .collect(Collectors.toMap(RequestsEventCountDto::getEventId, RequestsEventCountDto::getCount));
+
+        boolean onlyAvailable = Boolean.TRUE.equals(searchEventParams.getOnlyAvailable());
+
+        List<Event> filteredEvents = onlyAvailable
+                ? resultEvents.stream()
+                .filter(e -> {
+                    int limit = Optional.of(e.getParticipantLimit()).orElse(0);
+                    long confirmed = confirmedCounts.getOrDefault(e.getId(), 0L);
+                    return limit <= 0 || confirmed < limit;
+                })
+                .toList()
+                : resultEvents;
+
+        List<EventShortDto> result = filteredEvents.stream()
+                .map(eventMapper::toEventShortDto)
+                .toList();
+
         Map<Long, Long> viewStatsMap = getViewsAllEvents(resultEvents);
 
-        for (EventShortDto event : result) {
-            Long viewsFromMap = viewStatsMap.getOrDefault(event.getId(), 0L);
-            event.setViews(viewsFromMap);
-        }
-
+        result.forEach(event ->
+                event.setViews(viewStatsMap.getOrDefault(event.getId(), 0L))
+        );
         return result;
     }
 
@@ -428,7 +446,7 @@ public class EventServiceImpl implements EventService {
                     .filter(statsDto -> statsDto.getUri().startsWith("/events/"))
                     .collect(Collectors.toMap(
                             statsDto -> Long.parseLong(statsDto.getUri().substring("/events/".length())),
-                            statsDto -> (long) statsDto.getHits() // ✅ ИСПРАВЛЕНО: Явное приведение Integer к long
+                            statsDto -> (long) statsDto.getHits()
                     ));
         }
         return viewStatsMap;
