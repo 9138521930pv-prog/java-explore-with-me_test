@@ -29,7 +29,7 @@ import ru.practicum.ewm.model.mappers.EventMapper;
 import ru.practicum.ewm.model.mappers.LocationMapper;
 import ru.practicum.ewm.model.mappers.RequestMapper;
 import ru.practicum.ewm.repository.*;
-import ru.practicum.ewm.service.EventService;
+
 
 
 import java.time.LocalDateTime;
@@ -129,17 +129,20 @@ public class EventServiceImpl implements EventService {
         if (gotAction != null) {
             if (EventAdminState.PUBLISH_EVENT.equals(gotAction)) {
                 eventForUpdate.setEventStatus(EventStatus.PUBLISHED);
+                eventForUpdate.setPublisherDate(LocalDateTime.now());
                 hasChanges = true;
             } else if (EventAdminState.REJECT_EVENT.equals(gotAction)) {
                 eventForUpdate.setEventStatus(EventStatus.CANCELED);
+                eventForUpdate.setPublisherDate(null);
                 hasChanges = true;
             }
         }
-        Event eventAfterUpdate = null;
-        if (hasChanges) {
-            eventAfterUpdate = eventRepository.save(eventForUpdate);
-        }
-        return eventAfterUpdate != null ? eventMapper.toEventFullDto(eventAfterUpdate) : null;
+
+        Event eventAfterUpdate = hasChanges
+                ? eventRepository.save(eventForUpdate)
+                : eventForUpdate;
+
+        return eventToDto(eventForUpdate);
     }
 
     @Override
@@ -178,12 +181,32 @@ public class EventServiceImpl implements EventService {
                     break;
             }
         }
-        Event eventAfterUpdate = null;
-        if (hasChanges) {
-            eventAfterUpdate = eventRepository.save(eventForUpdate);
-        }
+        Event eventAfterUpdate = hasChanges
+                ? eventRepository.save(eventForUpdate)
+                : eventForUpdate;
 
-        return eventAfterUpdate != null ? eventMapper.toEventFullDto(eventAfterUpdate) : null;
+        return eventToDto(eventForUpdate);
+
+    }
+
+    private EventFullDto eventToDto(Event event) {
+        EventFullDto result = eventMapper.toEventFullDto(event);
+
+        result.setConfirmedRequests(
+                requestRepository
+                        .countsByEventIdInAndStatus(List.of(event.getId()), RequestStatus.CONFIRMED)
+                        .stream()
+                        .findFirst()
+                        .map(dto -> dto.getCount().intValue())
+                        .orElse(0)
+        );
+
+        result.setViews(
+                getViewsAllEvents(List.of(event))
+                        .getOrDefault(event.getId(), 0L)
+        );
+
+        return result;
     }
 
     @Override
@@ -332,18 +355,26 @@ public class EventServiceImpl implements EventService {
                     criteriaBuilder.lessThan(root.get("eventDate"), searchEventParams.getRangeEnd()));
         }
 
+        if (searchEventParams.getPaid() != null) {
+            specification = specification.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.equal(root.get("paid"), searchEventParams.getPaid()));
+        }
+
         specification = specification.and((root, query, criteriaBuilder) ->
                 criteriaBuilder.equal(root.get("eventStatus"), EventStatus.PUBLISHED));
+
+
 
         List<Event> resultEvents = eventRepository.findAll(specification, pageable).getContent();
         if (resultEvents.isEmpty()) {
             return Collections.emptyList();
         }
+
         var eventIds = resultEvents.stream().map(Event::getId).toList();
         log.info("eventIds size = {}, values = {}", eventIds.size(), eventIds);
 
         Map<Long, Long> confirmedCounts = requestRepository
-                .countsByEventIdInAndStatus(eventIds, RequestStatus.PENDING)
+                .countsByEventIdInAndStatus(eventIds, RequestStatus.CONFIRMED)
                 .stream()
                 .collect(Collectors.toMap(RequestsEventCountDto::getEventId, RequestsEventCountDto::getCount));
 
@@ -368,7 +399,20 @@ public class EventServiceImpl implements EventService {
         result.forEach(event ->
                 event.setViews(viewStatsMap.getOrDefault(event.getId(), 0L))
         );
+
+        String sortField = searchEventParams.getSort();
+
+        if ("EVENT_DATE".equals(sortField)) {
+            result = result.stream()
+                    .sorted(Comparator.nullsLast(Comparator.comparing(EventShortDto::getEventDate)))
+                    .toList();
+        } else if ("VIEWS".equals(sortField)) {
+            result = result.stream()
+                    .sorted(Comparator.nullsLast(Comparator.comparingLong(EventShortDto::getViews)))
+                    .toList();
+        }
         return result;
+
     }
 
     @Override
@@ -417,7 +461,6 @@ public class EventServiceImpl implements EventService {
     }
 
     private Map<Long, Long> getViewsAllEvents(List<Event> events) {
-        // Быстрый возврат, если событий нет
         if (events == null || events.isEmpty()) {
             return Collections.emptyMap();
         }
@@ -439,7 +482,6 @@ public class EventServiceImpl implements EventService {
         if (earliestDate != null) {
             ResponseEntity<Object> response = statsClient.getStats(earliestDate, LocalDateTime.now(), uris, true);
 
-            // Явное указание типа решает ошибку компиляции
             List<ViewStats> viewStatsList = objectMapper.convertValue(response.getBody(), new TypeReference<List<ViewStats>>() {});
 
             viewStatsMap = viewStatsList.stream()

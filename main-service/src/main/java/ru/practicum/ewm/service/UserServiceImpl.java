@@ -8,7 +8,7 @@ import ru.practicum.ewm.dto.NewUserRequest;
 import ru.practicum.ewm.dto.UserDto;
 import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.model.User;
-import ru.practicum.ewm.model.mappers.UserMapper; // Импортируем интерфейс-маппер
+import ru.practicum.ewm.model.mappers.UserMapper;
 import ru.practicum.ewm.repository.UserRepository;
 
 

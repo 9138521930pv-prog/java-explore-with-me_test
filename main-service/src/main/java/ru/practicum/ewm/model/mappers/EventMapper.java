@@ -25,6 +25,7 @@ public interface EventMapper {
     Event toEvent(NewEventDto newEventDto);
 
     @Mapping(source = "event.eventStatus", target = "state")
+    @Mapping(source = "event.publisherDate", target = "publishedOn")
     EventFullDto toEventFullDto(Event event);
 
     EventShortDto toEventShortDto(Event event);

@@ -12,7 +12,6 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 public class UpdateCompilationRequest {
-  //  private Long id;
     private Set<Long> events;
     private Boolean pinned;
     @Size(max = 50)
