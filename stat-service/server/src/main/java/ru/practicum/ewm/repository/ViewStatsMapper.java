@@ -21,3 +21,4 @@ public class ViewStatsMapper implements RowMapper<ViewStats> {
 }
 
 
+

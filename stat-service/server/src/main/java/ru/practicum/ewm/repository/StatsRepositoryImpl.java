@@ -3,9 +3,10 @@ package ru.practicum.ewm.repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import ru.practicum.ewm.EndpointRequest;
+import ru.practicum.ewm.EndpointHit;
 import ru.practicum.ewm.ViewStats;
 import ru.practicum.ewm.ViewsStatsRequest;
+
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -17,7 +18,7 @@ public class StatsRepositoryImpl implements StatsRepository {
     private final ViewStatsMapper viewStatsMapper;
 
     @Override
-    public void saveHit(EndpointRequest hit) {
+    public void saveHit(EndpointHit hit) {
         jdbcTemplate.update("INSERT INTO stats (app, uri, ip, created) VALUES (?, ?, ?, ?)",
                 hit.getApp(), hit.getUri(), hit.getIp(), Timestamp.valueOf(hit.getTimestamp()));
     }
@@ -44,8 +45,13 @@ public class StatsRepositoryImpl implements StatsRepository {
 
 
     private String createUrisQuery(List<String> uris) {
-        StringBuilder result = new StringBuilder("AND uri IN ('");
+        if (uris == null || uris.isEmpty()) {
+            return "AND 1=1";
+        }
+
+        StringBuilder result = new StringBuilder(uris.size() * 8 + 20); // Предварительная ёмкость
+        result.append("AND uri IN ('");
         result.append(String.join("', '", uris));
-        return result.append("') ").toString();
+        return result.append("')").toString();
     }
 }
