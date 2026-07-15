@@ -599,4 +599,14 @@ public class EventServiceImpl implements EventService {
         }
         return oldEvent;
     }
+
+    @Override
+    public List<EventShortDto> getSubscriptionEvents(Long subscriberId) {
+        if (!userRepository.existsById(subscriberId)) {
+            throw new NotFoundException("User with id = " + subscriberId + " not found");
+        }
+
+        return eventRepository.findSubscribedUsersEvents(subscriberId, EventStatus.PUBLISHED)
+                .stream().map(eventMapper::toEventShortDto).collect(Collectors.toList());
+    }
 }

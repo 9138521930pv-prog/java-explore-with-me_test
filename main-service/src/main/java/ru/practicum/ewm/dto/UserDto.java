@@ -1,6 +1,7 @@
 package ru.practicum.ewm.dto;
 
 import lombok.*;
+import ru.practicum.ewm.model.enums.UserStatus;
 
 @Getter
 @Setter
@@ -11,4 +12,5 @@ public class UserDto {
     private Long id;
     private String name;
     private String email;
+    private UserStatus status;
 }

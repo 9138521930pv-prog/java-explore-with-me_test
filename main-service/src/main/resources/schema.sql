@@ -3,14 +3,16 @@ DROP TABLE IF EXISTS location CASCADE;
 DROP TABLE IF EXISTS categories CASCADE;
 DROP TABLE IF EXISTS events CASCADE;
 DROP TABLE IF EXISTS compilations CASCADE;
-DROP TABLE IF EXISTS compilations_to_event CASCADE;
+DROP TABLE IF EXISTS compilations_events CASCADE;
 DROP TABLE If EXISTS requests CASCADE;
+DROP TABLE If EXISTS user_subscriptions CASCADE;
 
 CREATE TABLE IF NOT EXISTS users
 (
     id    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY UNIQUE,
     name  VARCHAR(250)        NOT NULL,
-    email VARCHAR(254) UNIQUE NOT NULL
+    email VARCHAR(254) UNIQUE NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'PUBLIC'
     );
 
 CREATE TABLE IF NOT EXISTS categories
@@ -66,7 +68,7 @@ CREATE TABLE IF NOT EXISTS compilations
     title  VARCHAR(50) NOT NULL
     );
 
-CREATE TABLE IF NOT EXISTS compilations_to_event
+CREATE TABLE IF NOT EXISTS compilations_events
 (
     id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     event_id       BIGINT NOT NULL,
@@ -74,3 +76,11 @@ CREATE TABLE IF NOT EXISTS compilations_to_event
     CONSTRAINT fk_event_compilation_to_event FOREIGN KEY (event_id) REFERENCES events (id) ON UPDATE CASCADE,
     CONSTRAINT fk_event_compilation_to_compilation FOREIGN KEY (compilation_id) REFERENCES compilations (id) ON UPDATE CASCADE
     );
+
+CREATE TABLE IF NOT EXISTS user_subscriptions (
+    user_subscriber_id BIGINT NOT NULL,
+    user_target_id BIGINT NOT NULL,
+    CONSTRAINT pk_user_subscriptions PRIMARY KEY (user_subscriber_id, user_target_id),
+    CONSTRAINT fk_subscription_subscriber FOREIGN KEY (user_subscriber_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_subscription_user_target FOREIGN KEY (user_target_id) REFERENCES users(id) ON DELETE CASCADE
+);
