@@ -599,4 +599,45 @@ public class EventServiceImpl implements EventService {
         }
         return oldEvent;
     }
+
+    private List<EventShortDto> eventsToEventShortDto(List<Event> events) {
+        if (events == null || events.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> eventIds = events.stream()
+                .map(Event::getId)
+                .collect(Collectors.toList());
+
+        Map<Long, Long> confirmedCountsMap = requestRepository
+                .countsByEventIdInAndStatus(eventIds, RequestStatus.CONFIRMED)
+                .stream()
+                .collect(Collectors.toMap(
+                        RequestsEventCountDto::getEventId,
+                        RequestsEventCountDto::getCount
+                ));
+
+        Map<Long, Long> viewsMap = getViewsAllEvents(events);
+
+        return events.stream()
+                .map(event -> {
+                    EventShortDto dto = eventMapper.toEventShortDto(event);
+                    Long count = confirmedCountsMap.getOrDefault(event.getId(), 0L);
+                    dto.setConfirmedRequests(count.intValue());
+                    Long views = viewsMap.getOrDefault(event.getId(), 0L);
+                    dto.setViews(views);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<EventShortDto> getSubscriptionEvents(Long subscriberId) {
+        if (!userRepository.existsById(subscriberId)) {
+            throw new NotFoundException("User with id = " + subscriberId + " not found");
+        }
+
+        List<Event> events = eventRepository.findSubscribedUsersEvents(subscriberId, EventStatus.PUBLISHED);
+        return eventsToEventShortDto(events);
+    }
 }
