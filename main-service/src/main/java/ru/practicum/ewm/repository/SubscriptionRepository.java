@@ -19,4 +19,7 @@ public interface SubscriptionRepository extends JpaRepository<UserSubscription, 
     @Query("delete from UserSubscription us " +
             "where us.targetUser.id = :targetUserId")
     void deleteAllByTargetUserId(@Param("targetUserId") Long targetUserId);
+
+    @Query("SELECT s.targetUser.id FROM UserSubscription s WHERE s.subscriber.id = :subscriberId")
+    List<Long> findTargetUserIdsBySubscriberId(@Param("subscriberId") Long subscriberId);
 }

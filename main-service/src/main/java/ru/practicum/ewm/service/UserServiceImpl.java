@@ -71,21 +71,21 @@ public class UserServiceImpl implements UserService {
     @Override
     public void subscribe(Long userId, Long targetUserId) {
         User subscriber = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователя с id = " + userId + " нет"));
+                .orElseThrow(() -> new NotFoundException("User with id = " + userId + " not found"));
 
         if (userId.equals(targetUserId)) {
-            throw new ConflictException("Пользователь не может подписаться на себя");
+            throw new ConflictException("A user cannot subscribe to themselves");
         }
 
         if (subscriptionRepository.existsBySubscriberIdAndTargetUserId(userId, targetUserId)) {
-            throw new ConflictException("Вы уже подписаны на этого пользователя");
+            throw new ConflictException("You are already subscribed to this user");
         }
 
         User targetUser = userRepository.findById(targetUserId)
-                .orElseThrow(() -> new NotFoundException("Пользователя с id = " + targetUserId + " нет"));
+                .orElseThrow(() -> new NotFoundException("User with id = " + targetUserId + " not found"));
 
         if (targetUser.getStatus() != UserStatus.PUBLIC) {
-            throw new ConflictException("Нельзя подписаться на приватного пользователя");
+            throw new ConflictException("Cannot subscribe to a private user");
         }
 
         UserSubscription userSubscription = UserSubscription.builder()
@@ -103,19 +103,20 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void unsubscribe(Long userId, Long targetUserId) {
-        User subscriber = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователя с id = " + userId + " нет"));
-
-        User targetUser = userRepository.findById(targetUserId)
-                .orElseThrow(() -> new NotFoundException("Пользователя с id = " + targetUserId + " нет"));
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("User with id = " + userId + " not found");
+        }
+        if (!userRepository.existsById(targetUserId)) {
+            throw new NotFoundException("User with id = " + targetUserId + " not found");
+        }
 
         if (!subscriptionRepository.existsBySubscriberIdAndTargetUserId(userId, targetUserId)) {
-            throw new NotFoundException("Вы не подписаны на этого пользователя");
+            throw new NotFoundException("You are not subscribed to this user");
         }
 
         UserSubscriptionId userSubscriptionId = UserSubscriptionId.builder()
-                .userSubscriberId(subscriber.getId())
-                .userTargetId(targetUser.getId())
+                .userSubscriberId(userId)
+                .userTargetId(targetUserId)
                 .build();
 
         subscriptionRepository.deleteById(userSubscriptionId);
@@ -123,13 +124,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public SubscriptionDto getSubscriptions(Long userId) {
-        List<UserSubscription> userSubscriptions = subscriptionRepository.findAllBySubscriberId(userId);
-
-        List<Long> targetUserId = userSubscriptions.stream()
-                .map(userSubscription -> userSubscription.getTargetUser().getId())
-                .toList();
-
-        return SubscriptionMapper.mapToSubscriptionDto(targetUserId, userId);
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("User with id = " + userId + " not found");
+        }
+        return SubscriptionMapper.mapToSubscriptionDto(
+                subscriptionRepository.findTargetUserIdsBySubscriberId(userId),
+                userId
+        );
     }
 
 
@@ -138,7 +139,7 @@ public class UserServiceImpl implements UserService {
     public UserDto setStatus(Long userId, UserStatus status) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователя с id = " + userId + " нет"));
+                .orElseThrow(() -> new NotFoundException("User with id = " + userId + " not found"));
 
         user.setStatus(status);
         userRepository.save(user);

@@ -564,7 +564,7 @@
               "    const response = pm.response.json();\r",
               "\r",
               "    pm.expect(response.message)\r",
-              "        .to.eql(\"Нельзя подписаться на приватного пользователя\");\r",
+              "        .to.eql(\"Cannot subscribe to a private user\");\r",
               "});\r",
               "\r",
               ""
